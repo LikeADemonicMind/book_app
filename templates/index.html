@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capture d'image et OCR</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <!-- Barre de navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <a class="navbar-brand" href="#">Capture d'image et OCR</a>
+    </nav>
+
+    <!-- Contenu principal -->
+    <div class="container text-center my-5">
+        <h1 class="mb-4">Application de Capture d'Image et OCR</h1>
+        
+        <!-- Vidéo en direct -->
+        <div class="mb-4">
+            <video id="video" class="img-fluid border rounded" style="max-width: 100%; height: auto;" autoplay></video>
+        </div>
+        
+        <!-- Bouton de capture -->
+        <button id="captureBtn" class="btn btn-primary btn-lg mb-4">Prendre une photo</button>
+        
+        <!-- Canvas pour capturer l'image -->
+        <canvas id="canvas" style="display: none;"></canvas>
+        
+        <!-- Formulaire caché pour envoyer l'image -->
+        <form id="imageForm" action="{{ url_for('capture') }}" method="POST" style="display: none;">
+            <input type="hidden" name="image" id="imageData">
+            <button type="submit" id="submitForm"></button>
+        </form>
+    </div>
+
+    <!-- Intégrer Bootstrap JS et jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        const video = document.getElementById("video");
+        const canvas = document.getElementById("canvas");
+        const captureBtn = document.getElementById("captureBtn");
+        const imageForm = document.getElementById("imageForm");
+        const imageData = document.getElementById("imageData");
+
+        // Demander l'accès à la caméra
+        navigator.mediaDevices.getUserMedia({
+            video: {
+                facingMode: { exact: "environment" }  // Demande la caméra arrière
+            }
+        })
+            .then(function(stream) {
+                console.log("Webcam accessible.");
+                video.srcObject = stream;
+            })
+            .catch(function(error) {
+                console.log("Erreur d'accès à la caméra : ", error);
+            });
+
+        // Capture d'une image
+        captureBtn.addEventListener('click', function() {
+            console.log("Capture du photo...");
+            // Vérifier si le stream est bien connecté
+            if (video.srcObject) {
+                // Dessiner l'image capturée sur le canvas
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0);
+                console.log("Image capturée et dessinée sur le canvas.");
+
+                // Convertir l'image en base64
+                const imageUrl = canvas.toDataURL('image/jpeg');
+                console.log("Image en base64:", imageUrl);  // Pour vérifier si l'image est bien capturée
+                imageData.value = imageUrl;  // Mettre l'image base64 dans le champ caché
+                
+                // Soumettre le formulaire
+                imageForm.submit();
+            } else {
+                console.log("Aucun flux vidéo trouvé.");
+            }
+        });
+    </script>
+</body>
+</html>
