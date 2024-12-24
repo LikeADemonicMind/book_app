@@ -6,3 +6,4 @@ sentence-transformers
 opencv-python
 pytesseract
 numpy
+sentencepiece
